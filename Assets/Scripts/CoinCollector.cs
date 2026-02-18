@@ -1,32 +1,31 @@
 using System;
 using UnityEngine;
 
-public class GemCollector : MonoBehaviour
+public class CoinCollector : MonoBehaviour
 {
-    public int totalGemsCollected = 0;
+    public int totalCoinCollected = 0;
     public LabeledIntUI ui;
 
     private void Start()
     {
         if (ui != null)
         {
-            ui.SetLabel("Gems");
-            ui.SetValue(totalGemsCollected);
+            ui.SetValue2(totalCoinCollected);
         }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Gem") == false)
+        if (other.gameObject.CompareTag("Coin") == false)
         {
             return;
         }
 
-        totalGemsCollected += 1;
+        totalCoinCollected += 1;
 
         if (ui != null)
         {
-            ui.SetValue(totalGemsCollected);
+            ui.SetValue2(totalCoinCollected);
         }
 
         other.gameObject.SetActive(false);

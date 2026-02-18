@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -26,7 +28,11 @@ public class PlayerController : MonoBehaviour
 
     public Collider2D _groundCollider;
 
+    private GunCollector _gunCollector;
+
     //References
+    public GameObject _shotPoint;
+    public GameObject _beam;
 
     private Rigidbody2D _rb;
 
@@ -36,8 +42,9 @@ public class PlayerController : MonoBehaviour
 
     private InputAction _moveAction;
 
-    private Animator _animator;
+    private InputAction _fireAction;
 
+    private Animator _animator;
     // Start is called before the first frame update
     void Start()
     {
@@ -47,9 +54,13 @@ public class PlayerController : MonoBehaviour
 
         _animator = GetComponent<Animator>();
 
+        _gunCollector = GetComponent<GunCollector>();
+
         _jumpAction = _playerInput.actions["Jump"];
 
         _moveAction = _playerInput.actions["Move"];
+
+        _fireAction = _playerInput.actions["Fire"];
 
         _rb.gravityScale = _gravityScale;
     }
@@ -67,21 +78,40 @@ public class PlayerController : MonoBehaviour
     {
         UpdateFlip();
 
-        if (_rb.velocity.y > 0.005)
+        if (_gunCollector != null && _gunCollector.gunCollected)
         {
-            _animator.Play("bunny idle");
+            if (_rb.velocity.y > 0.005)
+            {
+                _animator.Play("Bunny Gun Idle");
+            }
+            else if (_rb.velocity.y < -0.005)
+            {
+                _animator.Play("Bunny Gun Fall");
+            }
+            else if (Math.Abs(_horizontalMovement) > 0.005)
+            {
+                _animator.Play("Bunny Gun Walk");
+            }
+            else
+            {
+                _animator.Play("Bunny Gun Idle");
+            }
+        }
+        else if (_rb.velocity.y > 0.005)
+        {
+            _animator.Play("Bunny Idle");
         }
         else if (_rb.velocity.y < -0.005)
         {
-            _animator.Play("bunny fall");
+            _animator.Play("Bunny Fall");
         }
         else if (Math.Abs(_horizontalMovement) > 0.005)
         {
-            _animator.Play("bunny walk");
+            _animator.Play("Bunny Walk");
         }
         else
         {
-            _animator.Play("bunny idle");
+            _animator.Play("Bunny Idle");
         }
     }
 
@@ -109,6 +139,13 @@ public class PlayerController : MonoBehaviour
         if (_jumpAction.WasPressedThisFrame() && IsOnGround())
         {
             _rb.velocity = new Vector2(_rb.velocity.x, _jumpPower);
+        }
+
+        if (_fireAction.WasPressedThisFrame())
+        {
+            _animator.Play("Bunny Gun Knockback");
+            GameObject.Instantiate(_beam, _shotPoint.transform.position, _shotPoint.transform.rotation);
+            
         }
     }
 
